@@ -3,10 +3,11 @@ const router = express.Router()
 const mongoose = require('mongoose')
 const { dbName, dbUrl } = require('../config/dbconfig')
 const { UserModel } = require('../schema/userSchema')
+const {createToken,validate,adminGuard, hashPassword, comparePassword}=require('../auth')
 
 mongoose.connect(dbUrl)
 
-router.get('/all', async (req, res) => {
+router.get('/all', validate,adminGuard,async (req, res) => {
 
     try {
 
@@ -26,7 +27,7 @@ router.get('/all', async (req, res) => {
 
 })
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', validate,async (req, res) => {
 
     try {
 
@@ -51,6 +52,7 @@ router.post('/signup', async (req, res) => {
     try {
         let user = await UserModel.findOne({ email: req.body.email })
         if (!user) {
+            req.body.password = await hashPassword(req.body.password)
             let newUser = await UserModel.create(req.body)
             res.status(200).send({
                 message: "Data Saved scuccesfully ",
@@ -76,9 +78,11 @@ router.post('/signin', async (req, res) => {
     try {
         let user = await UserModel.findOne({ email: req.body.email })
         if (user) {
-           if(user.password===req.body.password){
+           if(await comparePassword(req.body.password,user.password)){
+            let token = await createToken(user)
             res.status(200).send({
                 message: "Login scuccesfully ",
+                token
             })
            }else{
             res.status(400).send({
