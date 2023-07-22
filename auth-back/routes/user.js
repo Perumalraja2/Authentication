@@ -4,6 +4,7 @@ const mongoose = require('mongoose')
 const { dbName, dbUrl } = require('../config/dbconfig')
 const { UserModel } = require('../schema/userSchema')
 const {createToken,validate,adminGuard, hashPassword, comparePassword}=require('../auth')
+const nodemon = require('nodemon')
 
 mongoose.connect(dbUrl)
 
@@ -110,6 +111,42 @@ router.post('/signin', async (req, res) => {
     }
 })
 
+router.post('/changepass/:id',validate, async (req, res) => {
+    try {
+        let user = await UserModel.findById(req.params.id)
+        if (user) {
+           if(await comparePassword(req.body.current_password,user.password)){
+            user.password= await hashPassword(req.body.new_password)
+            user.save()
+            res.status(200).send({
+                message: "Password changed scuccesfully ",
+             
+            })
+           }else{
+            res.status(400).send({
+                message: "invalid current password"
+
+
+            })
+
+           }
+           
+        }
+        else {
+            res.status(400).send({
+                message: "user doesnt exists"
+
+
+            })
+
+        }
+    } catch (error) {
+        res.status(500).send({
+            message: "internal server error",
+            error: error?.message
+        })
+    }
+})
 
 
 
