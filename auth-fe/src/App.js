@@ -1,9 +1,21 @@
 
-import './App.css';
+import React from 'react'
+import Sign from './components/Sign-in';
+import Signup from './components/Signup';
+import Dashboard from './components/Dashboard';
+
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 
 function App() {
-  return<>
-  <h1>Welcome to kirikalan Magic</h1>
+  return <>
+    <BrowserRouter>
+      <Routes>
+        <Route path='/sign' element={<Sign />} />
+        <Route path='/signup' element={<Signup />} />
+        <Route path='/dashboard' element={<Dashboard />} />
+        <Route path='*' element={<Navigate to='/sign' />} />
+      </Routes>
+    </BrowserRouter>
   </>
 }
 
